@@ -3,20 +3,20 @@ const path = require('path');
 const { Client, Intents, GatewayIntentBits, Collection, REST, Routes, Events, StringSelectMenuBuilder, ActionRowBuilder, EmbedBuilder, ActivityType } = require("discord.js");
 const dotenv = require("dotenv");
 dotenv.config();
-const Sentry = require("@sentry/node");
-const Tracing = require("@sentry/tracing");
+//const Sentry = require("@sentry/node");
+//const Tracing = require("@sentry/tracing");
 const client = new Client({ intents: [GatewayIntentBits.Guilds, GatewayIntentBits.MessageContent, GatewayIntentBits.GuildMessages], });
 client.login(process.env.DISCORD_TOKEN);
 
-Sentry.init({
+/*Sentry.init({
     dsn: process.env.DSN,
     tracesSampleRate: 1.0,
 });
 
-const transaction = Sentry.startTransaction({
+/*const transaction = Sentry.startTransaction({
     op: "osu! Tournament Bot",
     name: "osu! Tournament Bot",
-});
+});*/
 
 client.on("ready", async () => {
     console.log("osu Tournament bot is ready!");
@@ -44,14 +44,14 @@ client.on(Events.InteractionCreate, async (interaction) => {
     
     if (!command) {
         console.error(`No command matching ${interaction.commandName} was found.`);
-        Sentry.captureException(`No command matching ${interaction.commandName} was found.`);
+        //Sentry.captureException(`No command matching ${interaction.commandName} was found.`);
         return;
     }
     
     try {
         await command.execute(interaction);
     } catch (error) {
-        Sentry.captureException(error);
+        //Sentry.captureException(error);
         console.error(error);
         await interaction.reply({
             content: "There was an error while executing this command!",

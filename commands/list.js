@@ -7,16 +7,6 @@ module.exports = {
     data: new SlashCommandBuilder()
         .setName("create-tournament")
         .setDescription("Create a new tournament entry")
-        .addStringOption((option) => option.setName("name").setDescription("Tournament name").setRequired(true))
-        .addStringOption((option) => option.setName("role").setDescription("Tournament role").setRequired(true))
-        .addStringOption((option) => option.setName("qual_date").setDescription("Qualifiers date").setRequired(true))
-        .addStringOption((option) => option.setName("ro128_date").setDescription("RO128 date").setRequired(false))
-        .addStringOption((option) => option.setName("ro64_date").setDescription("RO64 date").setRequired(false))
-        .addStringOption((option) => option.setName("ro32_date").setDescription("RO32 date").setRequired(false))
-        .addStringOption((option) => option.setName("ro16_date").setDescription("RO16 date").setRequired(false))
-        .addStringOption((option) => option.setName("quarterfinals_date").setDescription("Quarterfinals date").setRequired(false))
-        .addStringOption((option) => option.setName("semifinals_date").setDescription("Semifinals date").setRequired(false))
-        .addStringOption((option) => option.setName("finals_date").setDescription("Finals date").setRequired(false))
         .addStringOption((option) => option.setName("grandfinals_date").setDescription("Grand Finals date").setRequired(false)),
 
     async execute(interaction) {
@@ -124,8 +114,8 @@ module.exports = {
                                 time: 30000,
                             });
 
-                            collector.on("collect", async (i) => {
-                                if (i.customId === "update_yes") {
+                            collector.on("collect", async (interaction) => {
+                                if (interaction.customId === "update_yes") {
                                     Object.assign(existingTournament, tournamentData);
 
                                     const updatedData = JSON.stringify(jsonParseData, null, 2);
@@ -189,10 +179,10 @@ module.exports = {
                                             ],
                                         };
 
-                                        interaction.editReply({ content: "Tournament entry has been updated.", ephemeral: true, embeds: [tournament_embed_updated] });
+                                        interaction.reply({ content: "Tournament entry has been updated.", ephemeral: true, embeds: [tournament_embed_updated] });
                                     });
-                                } else if (i.customId === "update_no") {
-                                    interaction.editReply({ content: "Tournament entry has not been updated.", ephemeral: true, embeds: [tournament_embed] });
+                                } else if (interaction.customId === "update_no") {
+                                    interaction.reply({ content: "Tournament entry has not been updated.", ephemeral: true, embeds: [tournament_embed] });
                                 }
                             });
 
