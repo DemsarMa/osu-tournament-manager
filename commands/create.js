@@ -2,6 +2,8 @@ const fs = require("fs");
 const { SlashCommandBuilder, ActionRowBuilder, ButtonBuilder, ButtonStyle } = require("discord.js");
 const dotenv = require("dotenv");
 dotenv.config();
+const util = require("util");
+const writeFileAsync = util.promisify(fs.writeFile);
 
 module.exports = {
     data: new SlashCommandBuilder()
@@ -49,7 +51,7 @@ module.exports = {
 
         //check if tournamentData.json exists
         if (fs.existsSync("tournamentData.json")) {
-            fs.readFile("tournamentData.json", "utf8", (err, data) => {
+            fs.readFile("tournamentData.json", "utf8", async (err, data) => {
                 if (err) {
                     console.error(err);
                     return;
@@ -117,24 +119,21 @@ module.exports = {
 
                     const actionRow = new ActionRowBuilder().addComponents(updateButton, cancelButton);
 
-                    interaction.reply({ content: "Tournament entry already exists. Would you like to update it?", embeds: [tournament_embed], components: [actionRow], ephemeral: true })
-                        .then((promptMessage) => {
-                            const collector = promptMessage.createMessageComponentCollector({
-                                filter: (i) => i.isButton() && i.user.id === interaction.user.id,
-                                time: 30000,
-                            });
+                    try {
+                        const promptMessage = await interaction.reply({content: "Tournament entry already exists. Would you like to update it?", embeds: [tournament_embed], components: [actionRow], ephemeral: true });
+            
+                        const collector = promptMessage.createMessageComponentCollector({
+                          filter: (i) => i.isButton() && i.user.id === interaction.user.id,
+                          time: 30000,
+                        });
 
                             collector.on("collect", async (i) => {
                                 if (i.customId === "update_yes") {
                                     Object.assign(existingTournament, tournamentData);
 
-                                    const updatedData = JSON.stringify(jsonParseData, null, 2);
-
-                                    fs.writeFile("tournamentData.json", updatedData, "utf8", (err) => {
-                                        if (err) {
-                                            console.error(err);
-                                            return;
-                                        }
+                                    try {
+                                        const updatedData = JSON.stringify(jsonParseData, null, 2);
+                                        await writeFileAsync("tournamentData.json", updatedData, "utf8");
 
                                         fs.readFile("tournamentData.json", "utf8", (err, data) => {
                                             if (err) {
@@ -151,23 +150,32 @@ module.exports = {
                                             }
 
                                             jsonParseData.forEach((tournament) => {
-                                                if (tournament.qualDate == null) { tournament.qualDate = "/";
+                                                if (tournament.qualDate == null) {
+                                                    tournament.qualDate = "/";
                                                 }
-                                                if (tournament.ro128Date == null) { tournament.ro128Date = "/";
+                                                if (tournament.ro128Date == null) {
+                                                    tournament.ro128Date = "/";
                                                 }
-                                                if (tournament.ro64Date == null) { tournament.ro64Date = "/";
+                                                if (tournament.ro64Date == null) {
+                                                    tournament.ro64Date = "/";
                                                 }
-                                                if (tournament.ro32Date == null) { tournament.ro32Date = "/";
+                                                if (tournament.ro32Date == null) {
+                                                    tournament.ro32Date = "/";
                                                 }
-                                                if (tournament.ro16Date == null) { tournament.ro16Date = "/";
+                                                if (tournament.ro16Date == null) {
+                                                    tournament.ro16Date = "/";
                                                 }
-                                                if (tournament.quarterfinalsDate == null) { tournament.quarterfinalsDate = "/";
+                                                if (tournament.quarterfinalsDate == null) {
+                                                    tournament.quarterfinalsDate = "/";
                                                 }
-                                                if (tournament.semifinalsDate == null) { tournament.semifinalsDate = "/";
+                                                if (tournament.semifinalsDate == null) {
+                                                    tournament.semifinalsDate = "/";
                                                 }
-                                                if (tournament.finalsDate == null) { tournament.finalsDate = "/";
+                                                if (tournament.finalsDate == null) {
+                                                    tournament.finalsDate = "/";
                                                 }
-                                                if (tournament.grandFinalsDate == null) { tournament.grandFinalsDate = "/";
+                                                if (tournament.grandFinalsDate == null) {
+                                                    tournament.grandFinalsDate = "/";
                                                 }
                                             });
                                         });
@@ -182,24 +190,37 @@ module.exports = {
                                                 { name: "RO64", value: ro64Date || "/", inline: true },
                                                 { name: "RO32", value: ro32Date || "/", inline: true },
                                                 { name: "RO16", value: ro16Date || "/", inline: true },
-                                                { name: "Quarterfinals", value: quarterfinalsDate || "/", inline: true },
+                                                {
+                                                    name: "Quarterfinals",
+                                                    value: quarterfinalsDate || "/",
+                                                    inline: true,
+                                                },
                                                 { name: "Semifinals", value: semifinalsDate || "/", inline: true },
                                                 { name: "Finals", value: finalsDate || "/", inline: true },
                                                 { name: "Grand Finals", value: grandFinalsDate || "/", inline: true },
                                             ],
                                         };
 
-                                        interaction.editReply({ content: "Tournament entry has been updated.", ephemeral: true, embeds: [tournament_embed_updated] });
-                                    });
+                                        await interaction.editReply({content: "Tournament entry has been updated.", ephemeral: true, embeds: [tournament_embed_updated]});
+                                    } catch (error) {
+                                        console.error("Error editing reply:", error);
+                                    }
                                 } else if (i.customId === "update_no") {
-                                    interaction.editReply({ content: "Tournament entry has not been updated.", ephemeral: true, embeds: [tournament_embed] });
+                                    try {
+                                        await interaction.editReply({content: "Tournament entry has not been updated.", ephemeral: true, embeds: [tournament_embed] });
+                                    } catch (error) {
+                                        console.error("Error editing reply:", error);
+                                    }
                                 }
                             });
 
-                            collector.on("end", () => {
-                                promptMessage.edit({ components: [] });
-                            });
-                        });
+                    collector.on("end", () => {
+                        promptMessage.edit({ components: [] });
+                    });
+                    } catch (error) {
+                        console.error("Error sending prompt message:", error);
+                    }
+
                 } else {
                     jsonParseData.push(tournamentData);
                     const updatedData = JSON.stringify(jsonParseData, null, 2);
