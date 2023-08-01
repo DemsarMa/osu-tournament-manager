@@ -7,7 +7,7 @@ const writeFileAsync = util.promisify(fs.writeFile);
 
 module.exports = {
     data: new SlashCommandBuilder()
-        .setName("create-tournament")
+        .setName("create")
         .setDescription("Create a new tournament entry")
         .addStringOption((option) => option.setName("name").setDescription("Tournament name").setRequired(true))
         .addStringOption((option) => option.setName("role").setDescription("Tournament role").setRequired(true))
@@ -120,7 +120,7 @@ module.exports = {
                     const actionRow = new ActionRowBuilder().addComponents(updateButton, cancelButton);
 
                     try {
-                        const promptMessage = await interaction.reply({content: "Tournament entry already exists. Would you like to update it?", embeds: [tournament_embed], components: [actionRow], ephemeral: true });
+                        const promptMessage = await interaction.reply({content: "Tournament entry already exists. Would you like to update it?", embeds: [tournament_embed], components: [actionRow] });
             
                         const collector = promptMessage.createMessageComponentCollector({
                           filter: (i) => i.isButton() && i.user.id === interaction.user.id,
@@ -201,13 +201,13 @@ module.exports = {
                                             ],
                                         };
 
-                                        await interaction.editReply({content: "Tournament entry has been updated.", ephemeral: true, embeds: [tournament_embed_updated]});
+                                        await interaction.editReply({content: "Tournament entry has been updated.", embeds: [tournament_embed_updated], components: []});
                                     } catch (error) {
                                         console.error("Error editing reply:", error);
                                     }
                                 } else if (i.customId === "update_no") {
                                     try {
-                                        await interaction.editReply({content: "Tournament entry has not been updated.", ephemeral: true, embeds: [tournament_embed] });
+                                        await interaction.editReply({content: "Tournament entry has not been updated.", embeds: [tournament_embed], components: [] });
                                     } catch (error) {
                                         console.error("Error editing reply:", error);
                                     }
@@ -230,7 +230,7 @@ module.exports = {
                             console.error(err);
                             return;
                         }
-                        interaction.reply({ content: "Tournament entry has been added.", ephemeral: true, embeds: [tournament_embed] });
+                        interaction.reply({ content: "Tournament entry has been added.", embeds: [tournament_embed] });
                     });
                 }
             });
@@ -261,7 +261,7 @@ module.exports = {
                     console.error(err);
                     return;
                 }
-                interaction.reply({ content: "Tournament entry has been added.", ephemeral: true, embeds: [tournament_embed] });
+                interaction.reply({ content: "Tournament entry has been added.", embeds: [tournament_embed] });
             });
         }
     },
